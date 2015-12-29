@@ -13,7 +13,6 @@ module CarrierWave
       def perform(*args)
         set_args(*args) if args.present?
         self.record = constantized_resource.find id
-      rescue *not_found_errors
       end
 
       private
