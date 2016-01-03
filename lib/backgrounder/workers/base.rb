@@ -12,6 +12,8 @@ module CarrierWave
 
       def perform(*args)
         set_args(*args) if args.present?
+        # 使用主库处理图片 避免抛出异常重试，速度太慢
+        ActiveRecord::Base.connection.stick_to_master! rescue nil
         self.record = constantized_resource.find id
       end
 
