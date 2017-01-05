@@ -12,11 +12,18 @@ module CarrierWave
 
       def perform(*args)
         set_args(*args) if args.present?
-        # 使用主库处理图片 避免抛出异常重试，速度太慢
-        ActiveRecord::Base.connection.stick_to_master! rescue nil
+        # 使用主库处理图片 避免抛出异常重试，速度太慢, 但是考虑到连接主库失败，增加重连次数
+        need_stick = ActiveRecord::Base.connection.respond_to?(:stick_to_master!)
+        if need_stick
+          current_time, retry_time = 0, 3
+          begin
+            current_time += 1
+            need_stick && ActiveRecord::Base.connection.stick_to_master!
+          end until ActiveRecord::Base.connection.instance_variable_get("@master_context").present? || (current_time == retry_time)
+        end
         self.record = constantized_resource.find id
+        need_stick && ActiveRecord::Base.connection.instance_variable_get("@master_context", nil)
       end
-
       private
 
       def not_found_errors
