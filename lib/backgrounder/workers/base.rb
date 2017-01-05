@@ -18,11 +18,10 @@ module CarrierWave
           current_time, retry_time = 0, 3
           begin
             current_time += 1
-            need_stick && ::ActiveRecord::Base.connection.stick_to_master!
+            need_stick && (::ActiveRecord::Base.connection.stick_to_master! rescue nil)
           end until ::ActiveRecord::Base.connection.instance_variable_get("@master_context").present? || (current_time == retry_time)
         end
         self.record = constantized_resource.find id
-        need_stick && ::ActiveRecord::Base.connection.instance_variable_set("@master_context", nil)
       end
       private
 
