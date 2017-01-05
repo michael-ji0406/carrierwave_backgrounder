@@ -22,7 +22,7 @@ module CarrierWave
           end until ::ActiveRecord::Base.connection.instance_variable_get("@master_context").present? || (current_time == retry_time)
         end
         self.record = constantized_resource.find id
-        need_stick && ::ActiveRecord::Base.connection.instance_variable_get("@master_context", nil)
+        need_stick && ::ActiveRecord::Base.connection.instance_variable_set("@master_context", nil)
       end
       private
 
